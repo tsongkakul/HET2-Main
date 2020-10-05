@@ -86,17 +86,20 @@ void AD5940AMPStructInit()
   pAMPCfg->MaxSeqLen = 512;                                 /* @todo add checker in function */
   pAMPCfg->RcalVal = 10000.0;
   pAMPCfg->NumOfData = -1;                              /* Never stop until you stop it mannually by AppAMPCtrl() function */
-
-    pAMPCfg->AmpODR = conv_period(CHAR1data[5]);
+    if ((CHAR1data[4])>>4) pAMPCfg->AmpODR = conv_period(CHAR1data[5])/ECHEM_SAMPLES;  // For CV, sample at 20x desired sampling period
+    else pAMPCfg->AmpODR = conv_period(CHAR1data[5]);
     pAMPCfg->FifoThresh = ECHEM_SAMPLES;
     pAMPCfg->ADCRefVolt = 1.82;                         /* Measure voltage on VREF_1V8 pin and add here */
 
     pAMPCfg->ExtRtia = bFALSE;          /* Set to true if using external Rtia */
     pAMPCfg->ExtRtiaVal = 10000000; /* Enter external Rtia value here is using one */
-    pAMPCfg->LptiaRtiaSel = (uint32_t) CHAR1data[4];       /* Select TIA gain resistor. */
-    uint8_t uint_bias = CHAR1data[3]; // type conversion
+    pAMPCfg->LptiaRtiaSel = (uint32_t) CHAR1data[3];       /* Select TIA gain resistor. */
+    pAMPCfg->ADCPgaGain = CHAR1data[6];
+
+
+    uint8_t uint_bias = CHAR1data[4]; // type conversion
     float float_bias = uint_bias - 128.0;
-    pAMPCfg->SensorBias =  float_bias;   /* Sensor bias voltage between reference and sense electrodes*/
+    pAMPCfg->SensorBias =  float_bias*10;   /* Sensor bias voltage between reference and sense electrodes*/
     pAMPCfg->Vzero = 1100;
     /* Configure Pulse*/
     pAMPCfg->pulseAmplitude = 500;                      /* Pulse amplitude on counter electrode (mV) */
@@ -105,7 +108,7 @@ void AD5940AMPStructInit()
 
 
 float conv_period(uint8_t t_code){
-    static const float period_lookup[15] = {0.05, 0.1, 0.125, 0.1667, 0.25,
+    static const float period_lookup[20] = {0.05, 0.1, 0.125, 0.1667, 0.25,
                                             0.5, 1, 2, 2.5, 5,
                                             10, 20, 25, 30, 50,
                                             60, 120, 150, 300, 600};

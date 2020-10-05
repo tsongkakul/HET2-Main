@@ -126,7 +126,7 @@
  */
 // Device Identifiers
 #define DEV_NUM                              0
-
+#define SW_VER                               0x00
 
 // How often to perform periodic event (in ms)
 #define CP_PERIODIC_EVT_PERIOD               10000
@@ -321,9 +321,9 @@ uint8_t g_BattRead;
  * LOCAL VARIABLES
  */
 
-extern uint8_t  SYSdata[];
-extern uint8_t  CHAR1data[];
-extern uint8_t  CHAR2data[];
+extern uint8_t  SYSdata[];   // Command Characteristic
+extern uint8_t  CHAR1data[]; // Config Characteristic
+extern uint8_t  CHAR2data[]; // Data Characteristic
 extern uint8_t  CHAR3data[];
 extern uint8_t  CHAR4data[];
 extern uint8_t  CHAR5data[];
@@ -618,11 +618,18 @@ static void CustomPeripheral_init(void)
 
   // Initialize settings
   CHAR1data[0] = DEV_NUM;
-  CHAR1data[1] = 0;
+  CHAR1data[1] = SW_VER;
   CHAR1data[2] = 0;
-  CHAR1data[3] = 28;    // set to desired default bias+128 to account for uint8 storage
-  CHAR1data[4] = 20;   // TIA Gain = 100k
+  CHAR1data[3] = 20;   // TIA Gain = 100k
+  CHAR1data[4] = 28;    // Bias: set to desired default bias+128 to account for uint8 storage
   CHAR1data[5] = 5;    // Period = 0.5
+  CHAR1data[6] = 1;    // PGA Gain = 1.5
+  CHAR1data[7] = 0;    // Error code
+  CHAR1data[8] = 0;    // Battery low
+  CHAR1data[9] = 0;    // Battery low
+  CHAR1data[10] = 0;    // Battery low
+  CHAR1data[11] = 0;    // Battery low
+
 
   /*{0.05, 0.1, 0.125, 0.1667, 0.25,
     0.5, 1, 2, 2.5, 5,
@@ -717,9 +724,6 @@ static void CustomPeripheral_init(void)
       AppCAPHGetCfg(&pAMPCfg);
       AD5940PlatformCfg();
 
-        AD5940AMPStructInit();  //Configure your parameters in this function
-
-        ADerror = AppCAPHInit(AppBuff[0], APPBUFF_SIZE);    /* Initialize AMP application. Provide a buffer, which is used to store sequencer commands */
        printf ("AD CFG COMPLETE\n");
 
 
@@ -1035,16 +1039,15 @@ static void CustomPeripheral_processAppMsg(cpEvt_t *pMsg)
       //User events
 
   case CP_INFO_EVT:
+      // measure battery here
+      // measure temperature/humidity here
       CUSTOM_SetParameter(CHAR1_ID, CHAR1_LEN, NULL); //send config data
       break;
 
   case CP_DATA_EVT:
-//      printf("Processing AD Data\n");
-//      GPIO_write(IND_LED,1);
-//      AppCAPHISR(CHAR2data); /* Deal with it and provide a buffer to store data we got */
-//      GPIO_write(IND_LED,0);
-      CUSTOM_SetParameter(CHAR1_ID, CHAR1_LEN, NULL); //send config data
-      CUSTOM_SetParameter(CHAR2_ID, CHAR2_LEN, NULL);
+     packetCount++;
+     CHAR2data[CHAR2_LEN-1] = packetCount;
+     CUSTOM_SetParameter(CHAR2_ID, CHAR2_LEN, NULL);
       break;
 
       //System events
@@ -1252,7 +1255,6 @@ static void CustomPeripheral_processGapMessage(gapEventHdr_t *pMsg)
       }
 
 
-      ADerror = AppCAPHCtrl(CHRONOAMPCTRL_START, 0); //Start CA/PH measurement
       CustomPeripheral_enqueueMsg(CP_INFO_EVT,NULL); //Send config data to aggregator
 
       break;
@@ -2602,15 +2604,42 @@ static void CustomPeripheral_processCharValueChangeEvt(uint8_t paramId)
   {
     case SYS_CFG_ID:
       CUSTOM_GetParameter(SYS_CFG_ID, &newValue);
+      // update settings
+      switch (newValue[0]){
+      case 0x01: // Change data mode
+          break;
+      case 0x02: // Interval mode sample length
+          break;
+      case 0x03: // Interval mode sleep duration
+          break;
+      case 0x0B: // Toggle blink
+          break;
+      case 0x0c: // Change config settings
+          CHAR1data[2] = newValue[2] && 0x0F; // Device mode
+          CHAR1data[3] = newValue[3]; // Bias value
+          CHAR1data[4] = newValue[4]; // Gain
+          CHAR1data[5] = newValue[5]; // Sampling Period
+          CHAR1data[6] = newValue[6]; //PGA Gain
+          if  (newValue[2]>>4){
+              AD5940AMPStructInit();  //Configure parameters in this function
+              ADerror = AppCAPHInit(AppBuff[0], APPBUFF_SIZE);    /* Initialize AMP application. Provide a buffer, which is used to store sequencer commands */
+              ADerror = AppCAPHCtrl(CHRONOAMPCTRL_START, 0); //Start CA/PH measurement
+              }
+              CHAR1data[7] = ADerror; //Update error
+              CHAR1data[1] = (newValue[2]>>4);
+          }
 
-      Display_printf(dispHandle, CP_ROW_STATUS_1, 0, "Char SYS: 0x%x%x%x%x",
-                     newValue[3],newValue[2],newValue[1],newValue[0]);
-      break;
-
+          break;
+      case 0x0f: // Data dump
+          break;
     default:
       // should not reach here!
       break;
   }
+
+  CustomPeripheral_enqueueMsg(CP_INFO_EVT,NULL); // send info data
+  Display_printf(dispHandle, CP_ROW_STATUS_1, 0, "Char SYS: 0x%x%x%x%x",
+                 newValue[3],newValue[2],newValue[1],newValue[0]);
 }
 
 /*********************************************************************

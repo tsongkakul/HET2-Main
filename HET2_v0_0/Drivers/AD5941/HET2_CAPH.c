@@ -15,7 +15,10 @@
  
  *****************************************************************************/
 #include "HET2_CAPH.h"
+#include <Profiles/custom_gatt_profile.h>
 
+
+extern uint8_t  CHAR1data[]; // Config Characteristic
 
 /* This file contains auto generated source code that user defined */
 
@@ -62,6 +65,9 @@ AppCHRONOAMPCfg_Type AppCAPHCfg = { .bParaChanged = bFALSE, .SeqStartAddr =
                                          .DataFifoSrc = DATATYPE_SINC2, /* Data type must be SINC2 for chrono-amperometric measurement*/
                                          .CHRONOAMPInited = bFALSE,
                                          .StopRequired = bFALSE, };
+
+
+LPLoopCfg_Type lp_loop;
 
 
 /* Local Functions */
@@ -373,7 +379,6 @@ static AD5940Err AppCHRONOAMPSeqCfgGen(void) //SEQ1
     uint32_t SeqLen;
 
     AFERefCfg_Type aferef_cfg;
-    LPLoopCfg_Type lp_loop;
     DSPCfg_Type dsp_cfg;
     HSLoopCfg_Type hs_loop;
 
@@ -589,7 +594,7 @@ static AD5940Err AppPHSeqMeasureGen(void) //SEQ2
     /* Sequence end. */
     error = AD5940_SEQGenFetchSeq(&pSeqCmd, &SeqLen);
     AD5940_SEQGenCtrl(bFALSE); /* Stop sequencer generator */
-//(TODO: create separate sequence instead of replacing transient)
+//(TODO: just do the read in the CA event
     if (error == AD5940ERR_OK) // store pH sequence info as transient sequence in CA struct
        {
            AppCAPHCfg.TransientSeqInfo.SeqId = SEQID_2;
@@ -638,6 +643,10 @@ static AD5940Err AppCHRONOAMPRegModify(int32_t * const pData,
 {
     FIFOCfg_Type fifo_cfg;
     SEQCfg_Type seq_cfg;
+    static float cv_bias;
+    static int cv_count = 0;
+    const int cv_steps = 20;
+
     /* Reset dtat FIFO threshold for normal amp */
     if (AppCAPHCfg.EndSeq)
     {
@@ -662,11 +671,31 @@ static AD5940Err AppCHRONOAMPRegModify(int32_t * const pData,
             return AD5940ERR_OK;
         }
     }
+
+    if (CHAR1data[2]){ //increment or decrement CV voltage
+            cv_count++; //increment counter
+            if ((cv_count % cv_steps) == 0) {
+                AppCAPHCfg.SensorBias = AppCAPHCfg.SensorBias * -1;
+            }
+
+            if (AppCAPHCfg.SensorBias<0){
+                cv_bias  = AppCAPHCfg.SensorBias + (float) (cv_count % cv_steps)*(2*AppCAPHCfg.SensorBias/ (float) cv_steps);// calculate new bias
+            }
+            else{
+                cv_bias  = AppCAPHCfg.SensorBias - (float) (cv_count % cv_steps)*(2*AppCAPHCfg.SensorBias/ (float) cv_steps);// calculate new bias
+            }
+            lp_loop.LpDacCfg.DacData12Bit = (int32_t) (cv_bias / DAC12BITVOLT_1LSB) + lp_loop.LpDacCfg.DacData6Bit * 64; //set new bias
+            AD5940_LPLoopCfgS(&lp_loop);
+    }
+
     if (AppCAPHCfg.StopRequired == bTRUE)
     {
         AD5940_WUPTCtrl(bFALSE);
         return AD5940ERR_OK;
     }
+
+    //
+
     return AD5940ERR_OK;
 }
 

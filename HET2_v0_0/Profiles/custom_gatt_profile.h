@@ -66,7 +66,7 @@ extern "C"
 //  Characteristic defines
 #define CHAR1_ID   1
 #define CHAR1_UUID 0x62D2
-#define CHAR1_LEN  10
+#define CHAR1_LEN  20
 
 //  Characteristic defines
 #define CHAR2_ID   2
