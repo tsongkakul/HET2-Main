@@ -155,7 +155,7 @@ Additional functionalities can be accessed and added by using the first two byte
 
 The device will transmit packets of two types. Info packets will be transmitted on Characteristic 1 (0x62D2), and data packets will be transmitted on Characteristic 2 (0x44DC)
 
-### Info packet
+### Info Packet
 
 The device will transmit a 20 byte info packet of the following structure on Characteristic 1 when it receives a command:
 
@@ -177,7 +177,7 @@ Error code byte:
 | **1** | Memory test failed |
 | **2-255** | Not currently used |
 
-## data packet
+## Data Packet
 
 The device will transmit an 82 byte data packet of the following structure when in streaming mode. When dumping data from memory, the packet will have the same format.
 
@@ -193,7 +193,7 @@ The last byte of the packet contains a tag containing the data source as well as
 
 The high byte of the Data source/counter is of the form 0x[Data source][Packet Count bits 11:7], and the low byte is of the form 0x[Packet Count Bytes 7:4][Packet Count Bytes 3:0]. The counter is a 12 bit counter which increments for each sample. Each sampling sequence should contain 1200 samples (300 samples/node \* 4 nodes).
 
-# Recommended USe
+# Recommended Use
 
 For long-term chronoamperometric measurement, the following usage is recommended:
 
