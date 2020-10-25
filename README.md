@@ -1,17 +1,13 @@
-# HET2 System packet schemeS
-
+# HET2 System Packet Scheme
 Tanner Songkakul
 
 # Overview
-
 This document contains the BLE packet scheme for the various configurations of the HET2 System.
 
 # Single board
-
 The Single Board configuration contains 1x Amperometric Channel and 1x Potentiometric Channel, as well as an accelerometer and temperature sensor.
 
 ## UUID descriptions
-
 | **Characteristic** | **ID** | **Length (Bytes)** | **Configuration** | **Description** |
 | --- | --- | --- | --- | --- |
 | **SYSCFG** | ABCD | 10 | Read/Write | Commands |
@@ -22,13 +18,11 @@ The Single Board configuration contains 1x Amperometric Channel and 1x Potentiom
 | **CHAR5** | 30D8 | 100 | Notify | Unused |
 
 ## Single Board Config Packet Structure
-
 The single byte command scheme used in previous HET2 versions is not longer used on this device. A similar command scheme is available to allow for future flexibility in adding functionality, but is not currently implemented on the device. The full command structure is as follows:
-|     Byte          |     Command Prefix        |     Command Value               |     Mode                                                                  |     Bias                           |     TIA Gain                       |     Sampling Period                       |     PGA Gain                       |     UNused    |     Unused    |     Unused    |
-|-------------------|---------------------------|---------------------------------|---------------------------------------------------------------------------|------------------------------------|------------------------------------|-------------------------------------------|------------------------------------|---------------|---------------|---------------|
-|     Byte Index    |     0                     |     1                           |     2                                                                     |     3                              |     4                              |     5                                     |     6                              |     7         |     8         |     9         |
+| Byte | Command Prefix | Command Value | Mode | Bias | TIA Gain | Sampling Period | PGA Gain | Unused | Unused | Unused |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Byte Index | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |     Desc.         |     Variable   Command    |     Variable   Command Value    |     Bytes [8:4]: Set data modes    Bytes [3:0]: Set   pstat mode          |     Bias   value (Vbias+128)/10    |     TIA   Gain (Preset options)    |     Sampling   period (Preset options)    |     PGA   Gain (Preset options)    |     Unused    |     Unused    |     Unused    |
-|                   |                           |                                 |                                                                           |                                    |                                    |                                           |                                    |               |               |               |
 
 To change configurations, byte 0 of the config must be set to 0x0C.
 
@@ -107,13 +101,13 @@ Byte 5 of the config packet selects the sampling period of the device for each c
 
 | **Value (Decimal)** | **Period (seconds)** | **Sampling Frequency (Hz)** |
 | --- | --- | --- |
-| **0** | 0.05 | 20 |
-| **1** | 0.1 | 10 |
-| **2** | 0.125 | 8 |
-| **3** | 0.1667 | 6 |
-| **4** | 0.25 | 4 |
-| **5** | 0.5 | 2 |
-| **6** | 1 | 1 |
+| **0** | 1 | 1 |
+| **1** | 0.05 | 20 |
+| **2** | 0.1 | 10 |
+| **3** | 0.125 | 8 |
+| **4** | 0.1667 | 6 |
+| **5** | 0.25 | 4 |
+| **6** | 0.5 | 2 |
 | **7** | 2 | 0.5 |
 | **8** | 2.5 | 0.4 |
 | **9** | 5 | 0.2 |
