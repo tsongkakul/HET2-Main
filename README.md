@@ -19,7 +19,7 @@ The Single Board configuration contains 1x Amperometric Channel and 1x Potentiom
 
 ## Single Board Config Packet Structure
 The single byte command scheme used in previous HET2 versions is not longer used on this device. A similar command scheme is available to allow for future flexibility in adding functionality, but is not currently implemented on the device. The full command structure is as follows:
-| Byte | Command Prefix | Command Value | Mode | Bias | TIA Gain | Sampling Period | PGA Gain | Unused | Unused | Unused |
+| Byte | Command Prefix | Command Value | Mode | Bias | TIA Gain | Sampling ODR | PGA Gain | Unused | Unused | Unused |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Byte Index | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |     Desc.         |     Variable   Command    |     Variable   Command Value    |     Bytes [8:4]: Set data modes    Bytes [3:0]: Set   pstat mode          |     Bias   value (Vbias+128)/10    |     TIA   Gain (Preset options)    |     Sampling   period (Preset options)    |     PGA   Gain (Preset options)    |     Unused    |     Unused    |     Unused    |
@@ -95,11 +95,11 @@ Byte 4 of the config packet selects the transimpedance gain resistor on board th
 | **25** | 256k |
 | **26** | 512k |
 
-### Sampling Period Byte
+### ODR Byte
 
-Byte 5 of the config packet selects the sampling period of the device for each channel. Note that the device actually samples at twice this rate, alternating between the chronoamperometric and potentiometric channels.
+Byte 5 of the config packet selects the output data rate of the device for each channel. Note that the device actually samples at twice this rate, alternating between the chronoamperometric and potentiometric channels.
 
-| **Value (Decimal)** | **Period (seconds)** | **Sampling Frequency (Hz)** |
+| **Value (Decimal)** | **Period (seconds)** | **Output Data Rate (ODR, Hz)** |
 | --- | --- | --- |
 | **0** | 1 | 1 |
 | **1** | 0.05 | 20 |
@@ -161,13 +161,13 @@ The device will transmit a 20 byte info packet of the following structure on Cha
 
 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8-9 | 10-11 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Device num (1 byte) | Software ver(1 byte) | Mode(1 byte) | TIA Gain (1 byte) | Bias (1 byte) | Sampl. Period (1 byte) | PGA Gain (1 byte) | Error codes (1 byte) | Last battery reading (2 bytes) | Last temp/humidity reading(2 bytes) |
+| Device num (1 byte) | Software ver(1 byte) | Mode(1 byte) | TIA Gain (1 byte) | Bias (1 byte) | ODR (1 byte) | PGA Gain (1 byte) | Error codes (1 byte) | Last battery reading (2 bytes) | Last temp/humidity reading(2 bytes) |
 
 The Software version byte is of the format 0x[Version][Revision]
 
 The Mode byte is of the format 0x[Idle/Streaming/Saving][CA/CV], where CA=0, CV=1, Idle=0, Streaming=1, Saving=2
 
-The TIA Gain, Bias, Sampling Period, and PGA Gain bytes match the table in the command section
+The TIA Gain, Bias, ODR, and PGA Gain bytes match the table in the command section
 
 Error code byte:
 
