@@ -2,45 +2,9 @@
 
 Tanner Songkakul
 
-# Contents
-
-[Overview 1](#_Toc51070264)
-
-[General Device function Diagram 1](#_Toc51070265)
-
-[Single board 2](#_Toc51070266)
-
-[UUID descriptions 2](#_Toc51070267)
-
-[Single Board Config Packet Structure 3](#_Toc51070268)
-
-[Mode Byte 3](#_Toc51070269)
-
-[Bias Byte 4](#_Toc51070270)
-
-[TIA Gain Byte 4](#_Toc51070271)
-
-[Sampling Period Byte 5](#_Toc51070272)
-
-[PGA Gain Byte 5](#_Toc51070273)
-
-[Variable Commands 6](#_Toc51070274)
-
-[Transmitted Packets 6](#_Toc51070275)
-
-[Info packet 6](#_Toc51070276)
-
-[data packet 6](#_Toc51070277)
-
-[Recommended USe 7](#_Toc51070278)
-
 # Overview
 
-This document contains the BLE packet scheme for the various configurations of the HET2 System. It is up to date as of **09/14/2020**
-
-## General Device function Diagram
-
-![](RackMultipart20201025-4-wfm54o_html_5261f6ec182521dc.png)
+This document contains the BLE packet scheme for the various configurations of the HET2 System.
 
 # Single board
 
@@ -266,4 +230,3 @@ Ending trial
 3. [optional] Blink LED to verify correct device
 4. Send Dump Memory command to receive data
 
-9
