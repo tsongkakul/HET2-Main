@@ -24,19 +24,11 @@ The Single Board configuration contains 1x Amperometric Channel and 1x Potentiom
 ## Single Board Config Packet Structure
 
 The single byte command scheme used in previous HET2 versions is not longer used on this device. A similar command scheme is available to allow for future flexibility in adding functionality, but is not currently implemented on the device. The full command structure is as follows:
-
-| **Byte** | **Command Prefix** | **Command Value** | **Mode** | **Bias** | **TIA Gain** | **Sampling Period** | **PGA Gain** |
- |
- |
- |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Byte Index** | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
-| **Desc.** | Variable Command | Variable Command Value | Bytes [8:4]: Set data modes
-Bytes [3:0]: Set pstat mode
- | Bias value (Vbias+128)/10 | TIA Gain (Preset options) | Sampling period (Preset options) | PGA Gain (Preset options) |
- |
- |
- |
+|     Byte          |     Command Prefix        |     Command Value               |     Mode                                                                  |     Bias                           |     TIA Gain                       |     Sampling Period                       |     PGA Gain                       |     UNused    |     Unused    |     Unused    |
+|-------------------|---------------------------|---------------------------------|---------------------------------------------------------------------------|------------------------------------|------------------------------------|-------------------------------------------|------------------------------------|---------------|---------------|---------------|
+|     Byte Index    |     0                     |     1                           |     2                                                                     |     3                              |     4                              |     5                                     |     6                              |     7         |     8         |     9         |
+|     Desc.         |     Variable   Command    |     Variable   Command Value    |     Bytes [8:4]: Set data modes    Bytes [3:0]: Set   pstat mode          |     Bias   value (Vbias+128)/10    |     TIA   Gain (Preset options)    |     Sampling   period (Preset options)    |     PGA   Gain (Preset options)    |     Unused    |     Unused    |     Unused    |
+|                   |                           |                                 |                                                                           |                                    |                                    |                                           |                                    |               |               |               |
 
 To change configurations, byte 0 of the config must be set to 0x0C.
 
